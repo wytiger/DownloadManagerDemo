@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 /**
  * 下载器
+ * 参考：https://github.com/simplepeng/Updater
  */
 public class Updater {
     private String apkFileName;

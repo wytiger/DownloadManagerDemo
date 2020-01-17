@@ -23,12 +23,12 @@ import java.util.ArrayList;
  * 参考：https://github.com/simplepeng/Updater
  */
 public class Updater {
-    private String apkFileName;
     private String apkFilePath;
     private String apkDirName;
+    private String apkFileName;
+    private String downloadUrl;
     private String title;
     private String desc;
-    private String downloadUrl;
 
     private Context context;
     private DownloadManager downloadManager;
@@ -44,7 +44,7 @@ public class Updater {
             Manifest.permission.READ_EXTERNAL_STORAGE};
     private static final int RC_SDCARD = 123;
 
-    private DownloadFailedReceiver downloadFailedReceiver = new DownloadFailedReceiver();
+    private DownloadFailReceiver downloadFailReceiver = new DownloadFailReceiver();
 
 
     private Updater(Context context) {
@@ -98,29 +98,25 @@ public class Updater {
             request.setDestinationUri(Uri.fromFile(new File(apkAbsPath)));
         }
 
-        //将下载请求加入下载队列
-        //加入下载队列后会给该任务返回一个long型的id，
         //通过该id可以取消任务，重启任务等等
         mTaskId = downloadManager.enqueue(request);
-        if (downloadFailedReceiver != null) {
-            context.registerReceiver(downloadFailedReceiver,
-                    new IntentFilter(DownloadFailedReceiver.tag));
+        if (downloadFailReceiver != null) {
+            context.registerReceiver(downloadFailReceiver, new IntentFilter(DownloadFailReceiver.TAG));
         }
     }
 
     /**
-     * 注册下载完成的监听
+     * 动态注册下载完成的监听
      */
     public void registerDownloadReceiver() {
         if (downloadReceiver == null) {
             downloadReceiver = new DownloadReceiver();
         }
-        context.registerReceiver(downloadReceiver,
-                new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        context.registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 
     /**
-     * 解绑下载完成的监听
+     * 动态解绑下载完成的监听
      */
     public void unRegisterDownloadReceiver() {
         if (downloadReceiver != null) {
@@ -161,11 +157,6 @@ public class Updater {
         }
     }
 
-
-    public static void showToast(Context context, String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-    }
-
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -196,17 +187,6 @@ public class Updater {
         }
 
         /**
-         * 设置下载下来的apk文件名
-         *
-         * @param apkName apk文件的名字
-         * @return
-         */
-        public Builder setApkFileName(String apkName) {
-            mUpdater.apkFileName = apkName;
-            return this;
-        }
-
-        /**
          * 设置apk下载的路径
          *
          * @param apkPath 自定义的全路径
@@ -225,6 +205,17 @@ public class Updater {
          */
         public Builder setApkDir(String dirName) {
             mUpdater.apkDirName = dirName;
+            return this;
+        }
+
+        /**
+         * 设置下载下来的apk文件名
+         *
+         * @param apkName apk文件的名字
+         * @return
+         */
+        public Builder setApkFileName(String apkName) {
+            mUpdater.apkFileName = apkName;
             return this;
         }
 
@@ -249,6 +240,7 @@ public class Updater {
             mUpdater.title = title;
             return this;
         }
+
         /**
          * 通知栏显示的描述
          *
@@ -271,16 +263,6 @@ public class Updater {
         }
 
         /**
-         * 是否为debug模式，会输出很多log信息（手动斜眼）
-         *
-         * @return
-         */
-        public Builder debug() {
-            LogUtils.isDebug = true;
-            return this;
-        }
-
-        /**
          * 允许漫游网络可下载
          *
          * @return
@@ -290,9 +272,18 @@ public class Updater {
             return this;
         }
 
-
         public Builder clearCache() {
             mUpdater.claerCache = true;
+            return this;
+        }
+
+        /**
+         * 是否为debug模式，会输出很多log信息（手动斜眼）
+         *
+         * @return
+         */
+        public Builder debug() {
+            LogUtils.isDebug = true;
             return this;
         }
 
@@ -303,8 +294,8 @@ public class Updater {
     }
 
 
-    public class DownloadFailedReceiver extends BroadcastReceiver {
-        public static final String tag = "DownloadFailedReceiver";
+    public class DownloadFailReceiver extends BroadcastReceiver {
+        public static final String TAG = "DownloadFailReceiver";
 
         @Override
         public void onReceive(Context context, Intent intent) {

@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 public class DownloadReceiver extends BroadcastReceiver {
 
@@ -27,7 +28,7 @@ public class DownloadReceiver extends BroadcastReceiver {
         DownloadManager dManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Query query = new DownloadManager.Query();
         query.setFilterById(downloadApkId);
-        if (dManager == null)return;
+        if (dManager == null) return;
         Cursor c = dManager.query(query);
         if (c != null && c.moveToFirst()) {
             int status = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
@@ -43,20 +44,18 @@ public class DownloadReceiver extends BroadcastReceiver {
                     break;
                 case DownloadManager.STATUS_SUCCESSFUL:
                     LogUtils.debug("STATUS_SUCCESSFUL");
-                    String downloadFileUrl = c
-                            .getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+                    String downloadFileUrl = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
                     Utils.installApk(context, Uri.parse(downloadFileUrl));
 //                    context.unregisterReceiver();
                     break;
                 case DownloadManager.STATUS_FAILED:
                     LogUtils.debug("STATUS_FAILED");
-                    Updater.showToast(context, "下载失败，开始重新下载...");
-                    context.sendBroadcast(new Intent(Updater.DownloadFailedReceiver.tag));
+                    Toast.makeText(context, "下载失败，开始重新下载...", Toast.LENGTH_SHORT).show();
+                    context.sendBroadcast(new Intent(Updater.DownloadFailReceiver.TAG));
                     break;
             }
             c.close();
         }
     }
-
 
 }

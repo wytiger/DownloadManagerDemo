@@ -1,4 +1,4 @@
-package com.wytiger.downloader;
+package com.wytiger.downloader.updater;
 
 import android.app.DownloadManager;
 import android.database.ContentObserver;

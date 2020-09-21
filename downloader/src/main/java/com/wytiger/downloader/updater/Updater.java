@@ -1,4 +1,4 @@
-package com.wytiger.downloader;
+package com.wytiger.downloader.updater;
 
 import android.Manifest;
 import android.app.DownloadManager;
@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 
 import java.io.File;

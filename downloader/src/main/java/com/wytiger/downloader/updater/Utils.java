@@ -1,4 +1,4 @@
-package com.wytiger.downloader;
+package com.wytiger.downloader.updater;
 
 import android.content.Context;
 import android.content.Intent;

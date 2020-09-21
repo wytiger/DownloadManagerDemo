@@ -1,4 +1,4 @@
-package com.wytiger.downloader;
+package com.wytiger.downloader.updater;
 
 
 import androidx.core.content.FileProvider;

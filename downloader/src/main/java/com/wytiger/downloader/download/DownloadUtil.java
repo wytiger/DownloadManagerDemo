@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
-
 import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,18 +44,25 @@ public class DownloadUtil {
      * @param context      上下文
      * @param url          文件url
      * @param fullFilePath 文件存放全路径
+     * @param listener     下载回调
+     * @param showNotify   是否显示下载通知
      */
-    public static long downloadFile(Context context, String url, String fullFilePath, DownloadListener listener) {
+    public static long downloadFile(Context context, String url, String fullFilePath, DownloadListener listener, boolean showNotify) {
         final DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setDestinationUri(Uri.fromFile(new File(fullFilePath)));
-        String name = fullFilePath;
-        if (fullFilePath.contains("/")) {
-            name = fullFilePath.substring(fullFilePath.lastIndexOf("/") + 1);
+        if (showNotify) {
+            String name = fullFilePath;
+            if (fullFilePath.contains("/")) {
+                name = fullFilePath.substring(fullFilePath.lastIndexOf("/") + 1);
+            }
+            request.setTitle(name);
+            request.setDescription(name + "正在下载...");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        } else {
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
         }
-        request.setTitle(name);
-        request.setDescription(name + "正在下载...");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+
         //加入下载队列
         final long downloadId = downloadManager.enqueue(request);
         //查询下载进度
@@ -92,24 +98,23 @@ public class DownloadUtil {
         if (cursor != null && cursor.moveToFirst()) {
             int totalSizeBytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
             int bytesDownloadSoFarIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
-
             // 下载的文件总大小
-            final int totalSizeBytes = cursor.getInt(totalSizeBytesIndex);
+            final long totalSizeBytes = cursor.getLong(totalSizeBytesIndex);
             // 截止目前已经下载的文件总大小
-            final int bytesDownloadSoFar = cursor.getInt(bytesDownloadSoFarIndex);
+            final long bytesDownloadSoFar = cursor.getLong(bytesDownloadSoFarIndex);
             //下载进度
             ThreadUtil.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    int progress = bytesDownloadSoFar / totalSizeBytes;
+                    long progress = bytesDownloadSoFar * 100 / totalSizeBytes;
                     if (listener != null) {
-                        listener.onProgressChange(bytesDownloadSoFar, totalSizeBytes, progress);
+                        listener.onProgressChange(bytesDownloadSoFar, totalSizeBytes, (int) progress);
                     }
                 }
             });
 
             //下载完毕，关闭
-            if (bytesDownloadSoFar >= totalSizeBytes) {
+            if (totalSizeBytes != -1 & bytesDownloadSoFar >= totalSizeBytes) {
                 ThreadUtil.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

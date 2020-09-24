@@ -20,17 +20,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void down(View v) {
-        String apkUrl = "https://v.meituan.net/mobile/app/Android/group-1000060401_1-meituan.apk/meituan";
+        String apkUrl = "https://v.meituan.net/mobile/app/Android/group-1000060401_1-meituan.apk";
         String rootpath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
         if (!rootpath.endsWith("/")) {
             rootpath += "/";
         }
         String fullFilePath = rootpath + "meituan.apk";
-        DownloadUtil.downloadFile(this, apkUrl, fullFilePath, null);
+        DownloadUtil.downloadFile(this, apkUrl, fullFilePath, null,true);
     }
 
     public void down2(View v) {
-        String apkUrl = "https://v.meituan.net/mobile/app/Android/group-1000060401_1-meituan.apk/meituan";
+        String apkUrl = "https://v.meituan.net/mobile/app/Android/group-1000060401_1-meituan.apk";
         Updater updater = new Updater.Builder(this)
                 .setDownloadUrl(apkUrl)
                 .setApkFileName("meituan2.apk")
